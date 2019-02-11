@@ -22,17 +22,17 @@ import random
 
 # Third Party Libraries
 import numpy # http://numpy.scipy.org/
-from porter import PorterStemmer # http://tartarus.org/~martin/PorterStemmer/python.txt
 from nltk.corpus import wordnet # http://www.nltk.org/download    Wordnet is a separate download from the same site
 
+from .porter import PorterStemmer
 # The first argument to this program is the input file
 
 
 # create the abbrevation mapping from the file called 'abbrev'
 abbrev = {}
-for line in open('abbrev'):
-    (abbreviation, expandeds) = line.split(' - ')
-    abbrev[abbreviation] = expandeds.split(', ')
+# for line in open('abbrev'):
+#     (abbreviation, expandeds) = line.split(' - ')
+#     abbrev[abbreviation] = expandeds.split(', ')
 
 # Reformulation: Spelling Correction
 # Returns levenshtein edit distance
@@ -297,11 +297,47 @@ def whitespacePunctuation(a, b):
     return a.replace(" ", "").replace(".", "").replace("-", "") == b.replace(" ", "").replace(".", "").replace("-", "")
 
 
+def tag(prev_query, query):
+    if prev_query == query:
+        type = 'same'
+    elif wordReorder(prev_query, query):
+        type = 'wordReorder'
+    elif whitespacePunctuation(prev_query, query):
+        type = 'whitespacePunctuation'
+    elif addWords(prev_query, query):
+        type = 'addWords'
+    elif addWords(query, prev_query): # this is removeWords
+        type = 'removeWords'
+    elif urlStrip(prev_query, query):
+        type = 'urlStrip'
+    elif stemming(prev_query, query):
+        type = 'stemming'
+    elif formAcronym(prev_query, query):
+        type = 'formAcronym'
+    elif formAcronym(query, prev_query): # this is expandAcronym
+        type = 'expandAcronym'
+    elif abbreviation(prev_query, query): # this is a single metric because you can abbreviate terms in either query at the same time
+        type = 'abbreviation'
+    # Reformulation: Substring
+    elif prev_query.startswith(query) or prev_query.endswith(query):
+        type = 'substring'
+    # Reformulation: Superstring
+    elif query.startswith(prev_query) or query.endswith(prev_query):
+        type = 'superstring'
+    elif wordSubstitution(prev_query, query):
+        type = 'wordSubstitution'
+    elif spellingCorrection(prev_query, query) <= 2:
+        type = 'spellingCorrection'
+    else:
+        type = 'new'
+    return type
+
+
 # CODE STARTS RUNNING HERE
 
 if __name__ == '__main__':
     prevUserId = None
-    prevQuery = None
+    prev_query = None
     prevURL = None
     prevRank = None
     prevTimestamp = None
@@ -326,9 +362,9 @@ if __name__ == '__main__':
             rank = None
         url = columns[4].strip()
 
-        if query == "-" or prevQuery == "-" or userId != prevUserId:
+        if query == "-" or prev_query == "-" or userId != prevUserId:
             prevUserId = userId
-            prevQuery = query
+            prev_query = query
             prevTimestamp = timestamp
             prevRank = rank
             prevUrl = url
@@ -354,56 +390,11 @@ if __name__ == '__main__':
 
         timeDiff = time.mktime(time.strptime(timestamp, "%Y-%m-%d %H:%M:%S")) - time.mktime(time.strptime(prevTimestamp, "%Y-%m-%d %H:%M:%S"))
 
-        if prevQuery == query:
-            type = 'same'
+        type = tag(prev_query, query)
 
-        elif wordReorder(prevQuery, query):
-            type = 'wordReorder'
-
-        elif whitespacePunctuation(prevQuery, query):
-            type = 'whitespacePunctuation'
-
-        elif addWords(prevQuery, query):
-            type = 'addWords'
-
-        elif addWords(query, prevQuery): # this is removeWords
-            type = 'removeWords'
-
-        elif urlStrip(prevQuery, query):
-            type = 'urlStrip'
-
-        elif stemming(prevQuery, query):
-            type = 'stemming'
-
-        elif formAcronym(prevQuery, query):
-            type = 'formAcronym'
-
-        elif formAcronym(query, prevQuery): # this is expandAcronym
-            type = 'expandAcronym'
-
-        elif abbreviation(prevQuery, query): # this is a single metric because you can abbreviate terms in either query at the same time
-            type = 'abbreviation'
-
-        # Reformulation: Substring
-        elif prevQuery.startswith(query) or prevQuery.endswith(query):
-            type = 'substring'
-
-        # Reformulation: Superstring
-        elif query.startswith(prevQuery) or query.endswith(prevQuery):
-            type = 'superstring'
-
-        elif wordSubstitution(prevQuery, query):
-            type = 'wordSubstitution'
-
-        elif spellingCorrection(prevQuery, query) <= 2:
-            type = 'spellingCorrection'
-
-        else:
-            type = 'new'
-
-        prevQuery = query
+        prev_query = query
         prevTimestamp = timestamp
         prevRank = rank
         prevUrl = url
 
-        print type, ',', userId, ',', int(timeDiff), ',', urlSame, ',', rankChange, ',', clickPattern
+        print(type, ',', userId, ',', int(timeDiff), ',', urlSame, ',', rankChange, ',', clickPattern)
