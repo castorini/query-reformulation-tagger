@@ -1,5 +1,5 @@
 # query-reformulation-tagger
-Python reimplementation of rule-based query reformulation tagger.
+Mirror of [Jeff Huang's code](http://jeffhuang.com/reformulationClassifier.py).
 
 See [Analyzing and Evaluating Query Reformulation Strategies in Web Search Logs](https://jeffhuang.com/Final_Reformulation_CIKM09.pdf).
 
