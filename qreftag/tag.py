@@ -121,13 +121,17 @@ def cached_path_similarity(synA, synB):
     if (synB, synA) in pscache:
         return pscache[(synB, synA)]
     sim = synA.path_similarity(synB)
+    sim = 0 if sim is None else sim
     pscache[(synA, synB)] = sim
     return sim
 
 def wordSubstitutionHelper(a, b):
     for synA in wordnet.synsets(a):
         for synB in wordnet.synsets(b):
-            if synA.path_similarity(synB) >= 0.2:
+            real_sim = synA.path_similarity(synB)
+            if not real_sim:
+                continue
+            if real_sim >= 0.2:
                 return True
 
     return False

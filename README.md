@@ -1,7 +1,9 @@
 # query-reformulation-tagger
-Mirror of [Jeff Huang's code](http://jeffhuang.com/reformulationClassifier.py).
+Mirror of [Jeff Huang's code](http://jeffhuang.com/reformulationClassifier.py) and the [Porter stemmer](http://www.tartarus.org/~martin/PorterStemmer), updated to be Python 3 compatible.
 
-See [Analyzing and Evaluating Query Reformulation Strategies in Web Search Logs](https://jeffhuang.com/Final_Reformulation_CIKM09.pdf).
+## Citation
+
+See [Analyzing and Evaluating Query Reformulation Strategies in Web Search Logs](https://jeffhuang.com/Final_Reformulation_CIKM09.pdf) for more details.
 
 ```
 @inproceedings{huang2009analyzing,
